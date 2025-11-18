@@ -5,7 +5,7 @@ from llm import generate_text
 
 def main():
     setup_mic()
-    speak("How can i help ya mare?")
+    speak("In cosa posso essere utile Mare?")
     while True:
         user_input = rt()
         if user_input is None:
