@@ -49,7 +49,7 @@ def main() -> str | None:
         if text is None:
             continue
 
-        if "jarvis" or "jarvi" in text:
+        if "jarvis" or "jarvi" or "delemain" in text:
             return text
         else:
             print(f"Ignorato (manca wake word 'Jarvis'): {text}")

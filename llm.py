@@ -70,3 +70,22 @@ class Chat:
         self.history.append(("Assistente", cleaned_text)) # Aggiunge la conversazione al history
         
         return cleaned_text
+
+    def check_visual_intent(self, user_input: str) -> bool:
+        """
+        Determina se l'input dell'utente richiede l'uso della fotocamera.
+        """
+        prompt = (
+            f"Analizza la seguente frase dell'utente e rispondi SOLO con 'SI' se richiede di vedere qualcosa, "
+            f"o 'NO' altrimenti. Esempi SI: 'Cosa vedi?', 'Descrivi questo', 'Cosa ho in mano?'. "
+            f"Esempi NO: 'Che ore sono?', 'Raccontami una storia', 'Chi è il presidente?'.\n\n"
+            f"Frase: {user_input}"
+        )
+        
+        response = self.client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
+        )
+        
+        text = response.text or ""
+        return "SI" in text.upper().strip() 
