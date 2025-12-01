@@ -1,26 +1,36 @@
 import speech_recognition as sr 
 from Speech import speak
 
-r = sr.Recognizer() #crea un riconoscitore di parlato
-mic = sr.Microphone() #usa il microfono di default del sistema
+# Initialize recognizer and microphone
+r = sr.Recognizer()
+mic = sr.Microphone()
 
-def setup_mic(): #Calibra il microfono per il rumore di fondo
+def setup_mic():
+    """
+    Calibrates the microphone for ambient noise.
+    This helps in better speech recognition accuracy.
+    """
     with mic as source:
-        print("Calibro il rumore di fondo...")
-        r.adjust_for_ambient_noise(source, duration=0.5)  #type: ignore
+        print("[SYSTEM] Calibrating background noise...")
+        r.adjust_for_ambient_noise(source, duration=0.5)
 
 def listen_until_pause(pause_seconds=1.5, timeout=None) -> str | None:
     """
-    Ascolta dal microfono finché non rileva circa 'pause_seconds'
-    secondi di silenzio. 'timeout' è il tempo massimo per iniziare
-    a parlare (dopo aver avviato l'ascolto).
+    Listens for speech input until a pause is detected.
+    
+    Args:
+        pause_seconds (float): Duration of silence to consider the phrase complete.
+        timeout (int): Maximum time to wait for speech to start.
+        
+    Returns:
+        str | None: The recognized text in lowercase, or None if no speech detected/error.
     """
-
     with mic as source:
-        print("Sto ascoltando, parla pure...")
+        print("[SYSTEM] Listening...")
 
-        r.pause_threshold = pause_seconds #Quanto silenzio deve passare prima di considerare finita la frase
-        r.non_speaking_duration = 0.6 #Quanto silenzio minimo ignora all'inizio / tra parole non significative
+        # Configure silence thresholds
+        r.pause_threshold = pause_seconds 
+        r.non_speaking_duration = 0.6 
 
         try:
             audio = r.listen(
@@ -32,31 +42,42 @@ def listen_until_pause(pause_seconds=1.5, timeout=None) -> str | None:
             return None
 
     try:
-        text = r.recognize_google(audio, language="it-IT") #type: ignore
-        print(f"[TU]: {text}")
+        # Recognize speech using Google Web Speech API (Italian)
+        text = r.recognize_google(audio, language="it-IT")
+        print(f"[YOU]: {text}")
         return text.lower()
     except sr.UnknownValueError:
+        # Speech was unintelligible
         return None
     except sr.RequestError as e:
-        print("Errore di connessione al servizio di riconoscimento:", e)
+        print(f"[ERROR] Speech recognition service error: {e}")
         return None
 
 
-def main() -> str | None:
+def listen_continuous() -> str | None:
+    """
+    Continuously listens for the wake word or valid commands.
+    Filters out noise and irrelevant speech.
+    
+    Returns:
+        str | None: The valid command text if wake word is detected.
+    """
     while True:
-        text = listen_until_pause(timeout=5)
+        text = listen_until_pause()
 
         if text is None:
             continue
 
-        if "jarvis" or "jarvi" or "delemain" in text:
+        # Check for wake words or specific keywords
+        # Note: 'delemain' seems to be a custom wake word or misinterpretation of 'jarvis'
+        if "jarvis" in text or "jarvi" in text or "delemain" in text:
             return text
         else:
-            print(f"Ignorato (manca wake word 'Jarvis'): {text}")
+            print(f"[IGNORED] Missing wake word: {text}")
 
 
-#PER DEBUG:
+# DEBUG:
 # if __name__ == "__main__":
-#     setup_mic() # Assicuriamoci di calibrare se lanciato direttamente
+#     setup_mic() 
 #     while True:
-#         print(main())
+#         print(listen_continuous())
